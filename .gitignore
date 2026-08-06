@@ -1,0 +1,8 @@
+# Runtime data
+data/
+
+# Compiled executable
+password_toolkit
+
+# macOS
+.DS_Store
