@@ -11,6 +11,16 @@
 
 using namespace std;
 
+string trim(const string& str) {
+    size_t start = str.find_first_not_of(" \t");
+    if (start == string::npos) {
+        return "";
+    }
+
+    size_t end = str.find_last_not_of(" \t");
+    return str.substr(start, end - start + 1);
+}
+
 PasswordManager::PasswordManager(
     const string& userFilePath,
     const string& integrityFilePath
@@ -121,9 +131,12 @@ bool PasswordManager::isStrongPassword(
     return hasUpper && hasLower && hasDigit;
 }
 bool PasswordManager::createAccount(
-    const string& username,
+    std::string username,
     const string& password
 ) {
+
+    username = trim(username);
+
     if (username.empty() || password.empty()) {
         return false;
     }

@@ -13,7 +13,7 @@ public:
     );
 
     bool createAccount(
-        const std::string& username,
+        std::string username,
         const std::string& password
     );
 
