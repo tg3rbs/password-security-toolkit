@@ -6,6 +6,8 @@
 #include <iostream>
 #include <random>
 #include <string>
+#include <cctype>
+#include <algorithm>
 
 using namespace std;
 
@@ -92,7 +94,32 @@ bool PasswordManager::usernameExists(const string& username) const {
 
     return loadAccountFromFile(username, account);
 }
+bool PasswordManager::isStrongPassword(
+    const string& password
+) const {
 
+    if (password.length() < 8) {
+        return false;
+    }
+
+    bool hasUpper = false;
+    bool hasLower = false;
+    bool hasDigit = false;
+
+    for (char c : password) {
+
+        if (isupper(c))
+            hasUpper = true;
+
+        else if (islower(c))
+            hasLower = true;
+
+        else if (isdigit(c))
+            hasDigit = true;
+    }
+
+    return hasUpper && hasLower && hasDigit;
+}
 bool PasswordManager::createAccount(
     const string& username,
     const string& password
@@ -102,6 +129,9 @@ bool PasswordManager::createAccount(
     }
 
     if (usernameExists(username)) {
+        return false;
+    }
+    if (!isStrongPassword(password)) {
         return false;
     }
 

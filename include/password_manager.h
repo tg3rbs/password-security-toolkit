@@ -53,6 +53,10 @@ private:
     ) const;
 
     bool usernameExists(const std::string& username) const;
+
+    bool isStrongPassword(
+    const std::string& password
+    ) const;
 };
 
 #endif
