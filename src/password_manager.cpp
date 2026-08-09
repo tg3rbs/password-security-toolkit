@@ -183,23 +183,25 @@ bool PasswordManager::verifyLogin(
     const string& username,
     const string& password
 ) const {
+    const string cleanUsername = trim(username);
+
     CachedAccount account;
 
-    const auto cachedAccount = accountCache.find(username);
+    const auto cachedAccount =
+        accountCache.find(cleanUsername);
 
     if (cachedAccount != accountCache.end()) {
         ++cacheHits;
-
         account = cachedAccount->second;
     }
     else {
         ++cacheMisses;
 
-        if (!loadAccountFromFile(username, account)) {
+        if (!loadAccountFromFile(cleanUsername, account)) {
             return false;
         }
 
-        accountCache[username] = account;
+        accountCache[cleanUsername] = account;
     }
 
     const string attemptedHash =
