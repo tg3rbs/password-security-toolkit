@@ -22,10 +22,16 @@ public:
         const std::string& password
     ) const;
 
+    bool changePassword(
+    const std::string& username,
+    const std::string& currentPassword,
+    const std::string& newPassword
+    );
+
     void displayCacheStats() const;
 
     void clearCache();
-
+    
 private:
     struct CachedAccount {
         std::string salt;

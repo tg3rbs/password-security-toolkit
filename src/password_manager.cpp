@@ -8,6 +8,7 @@
 #include <string>
 #include <cctype>
 #include <algorithm>
+#include <cstdio>
 
 using namespace std;
 
@@ -208,6 +209,101 @@ bool PasswordManager::verifyLogin(
         hashPassword(password, account.salt);
 
     return attemptedHash == account.passwordHash;
+}
+
+bool PasswordManager::changePassword(
+    const string& username,
+    const string& currentPassword,
+    const string& newPassword
+) {
+    const string cleanUsername = trim(username);
+
+    // The user must prove they know the current password.
+    if (!verifyLogin(cleanUsername, currentPassword)) {
+        return false;
+    }
+
+    // The new password must satisfy our password rules.
+    if (!isStrongPassword(newPassword)) {
+        return false;
+    }
+
+    const string newSalt = generateSalt();
+    const string newHash = hashPassword(newPassword, newSalt);
+
+    ifstream inputFile(userFilePath);
+
+    if (!inputFile.is_open()) {
+        return false;
+    }
+
+    const string temporaryFilePath = userFilePath + ".tmp";
+    ofstream outputFile(temporaryFilePath);
+
+    if (!outputFile.is_open()) {
+        return false;
+    }
+
+    string storedUsername;
+    string storedSalt;
+    string storedHash;
+
+    bool accountUpdated = false;
+
+    while (
+        getline(inputFile, storedUsername, ':') &&
+        getline(inputFile, storedSalt, ':') &&
+        getline(inputFile, storedHash)
+    ) {
+        if (storedUsername == cleanUsername) {
+            outputFile
+                << cleanUsername << ":"
+                << newSalt << ":"
+                << newHash << '\n';
+
+            accountUpdated = true;
+        }
+        else {
+            outputFile
+                << storedUsername << ":"
+                << storedSalt << ":"
+                << storedHash << '\n';
+        }
+    }
+
+    inputFile.close();
+    outputFile.close();
+
+    if (!accountUpdated) {
+        remove(temporaryFilePath.c_str());
+        return false;
+    }
+
+    if (remove(userFilePath.c_str()) != 0) {
+        remove(temporaryFilePath.c_str());
+        return false;
+    }
+
+    if (rename(
+        temporaryFilePath.c_str(),
+        userFilePath.c_str()
+    ) != 0) {
+        return false;
+    }
+
+    accountCache[cleanUsername] = {
+        newSalt,
+        newHash
+    };
+
+    if (!updateFileHash(
+        userFilePath,
+        integrityFilePath
+    )) {
+        return false;
+    }
+
+    return true;
 }
 
 void PasswordManager::displayCacheStats() const {

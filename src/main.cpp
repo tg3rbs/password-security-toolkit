@@ -13,9 +13,10 @@ void displayMenu() {
     cout << "-------------------------\n";
     cout << "1. Create account\n";
     cout << "2. Log in\n";
-    cout << "3. Display cache statistics\n";
+    cout << "3. View cache statistics\n";
     cout << "4. Clear cache\n";
-    cout << "5. Exit\n";
+    cout << "5. Change password\n";
+    cout << "6. Exit\n";
     cout << "Enter your choice: ";
 }
 
@@ -65,6 +66,37 @@ void loginMenu(const PasswordManager& passwordManager) {
     }
 }
 
+void changePasswordMenu(PasswordManager& passwordManager) {
+    string username;
+    string currentPassword;
+    string newPassword;
+
+    cout << "\nChange Password\n";
+
+    cout << "Username: ";
+    getline(cin, username);
+
+    cout << "Current password: ";
+    getline(cin, currentPassword);
+
+    cout << "New password: ";
+    getline(cin, newPassword);
+
+    const bool passwordChanged =
+        passwordManager.changePassword(
+            username,
+            currentPassword,
+            newPassword
+        );
+
+    if (passwordChanged) {
+        cout << "Password changed successfully.\n";
+    }
+    else {
+        cout << "Password could not be changed.\n";
+    }
+}
+
 int main() {
     filesystem::create_directories("data");
 
@@ -96,11 +128,11 @@ int main() {
 
     int choice = 0;
 
-    while (choice != 5) {
+    while (choice != 6) {
         displayMenu();
 
         if (!(cin >> choice)) {
-            cout << "Invalid input. Enter a number from 1 to 5.\n";
+            cout << "Invalid input. Enter a number from 1 to 6.\n";
 
             cin.clear();
 
@@ -132,15 +164,18 @@ int main() {
 
             case 4:
                 passwordManager.clearCache();
-                cout << "Cache cleared successfully.\n";
                 break;
 
             case 5:
+                changePasswordMenu(passwordManager);
+                break;
+
+            case 6:
                 cout << "Exiting program.\n";
                 break;
 
             default:
-                cout << "Enter a number from 1 to 5.\n";
+                cout << "Enter a number from 1 to 6.\n";
         }
     }
 
