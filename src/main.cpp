@@ -1,5 +1,7 @@
 #include "password_manager.h"
 #include "file_integrity.h"
+#include "credential.h"
+#include "credential_vault.h"
 
 #include <filesystem>
 #include <iostream>
@@ -156,7 +158,6 @@ int main() {
             cout << "Could not create integrity hash.\n";
         }
     }
-
 
     int choice = 0;
 
