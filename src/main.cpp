@@ -16,7 +16,8 @@ void displayMenu() {
     cout << "3. View cache statistics\n";
     cout << "4. Clear cache\n";
     cout << "5. Change password\n";
-    cout << "6. Exit\n";
+    cout << "6. Delete account\n";
+    cout << "7. Exit\n";
     cout << "Enter your choice: ";
 }
 
@@ -97,6 +98,32 @@ void changePasswordMenu(PasswordManager& passwordManager) {
     }
 }
 
+void deleteAccountMenu(PasswordManager& passwordManager) {
+    string username;
+    string password;
+
+    cout << "\nDelete Account\n";
+
+    cout << "Username: ";
+    getline(cin, username);
+
+    cout << "Password: ";
+    getline(cin, password);
+
+    const bool accountDeleted =
+        passwordManager.deleteAccount(
+            username,
+            password
+        );
+
+    if (accountDeleted) {
+        cout << "Account deleted successfully.\n";
+    }
+    else {
+        cout << "Account could not be deleted.\n";
+    }
+}
+
 int main() {
     filesystem::create_directories("data");
 
@@ -128,11 +155,11 @@ int main() {
 
     int choice = 0;
 
-    while (choice != 6) {
+    while (choice != 7) {
         displayMenu();
 
         if (!(cin >> choice)) {
-            cout << "Invalid input. Enter a number from 1 to 6.\n";
+            cout << "Invalid input. Enter a number from 1 to 7.\n";
 
             cin.clear();
 
@@ -171,11 +198,15 @@ int main() {
                 break;
 
             case 6:
+                deleteAccountMenu(passwordManager);
+                break;
+
+            case 7:
                 cout << "Exiting program.\n";
                 break;
 
             default:
-                cout << "Enter a number from 1 to 6.\n";
+                cout << "Enter a number from 1 to 7.\n";
         }
     }
 

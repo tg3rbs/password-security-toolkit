@@ -306,6 +306,84 @@ bool PasswordManager::changePassword(
     return true;
 }
 
+bool PasswordManager::deleteAccount(
+    const string& username,
+    const string& password
+) {
+    const string cleanUsername = trim(username);
+
+    // Require authentication before deleting the account.
+    if (!verifyLogin(cleanUsername, password)) {
+        return false;
+    }
+
+    ifstream inputFile(userFilePath);
+
+    if (!inputFile.is_open()) {
+        return false;
+    }
+
+    const string temporaryFilePath = userFilePath + ".tmp";
+    ofstream outputFile(temporaryFilePath);
+
+    if (!outputFile.is_open()) {
+        return false;
+    }
+
+    string storedUsername;
+    string storedSalt;
+    string storedHash;
+
+    bool accountDeleted = false;
+
+    while (
+        getline(inputFile, storedUsername, ':') &&
+        getline(inputFile, storedSalt, ':') &&
+        getline(inputFile, storedHash)
+    ) {
+        if (storedUsername == cleanUsername) {
+            accountDeleted = true;
+            continue;
+        }
+
+        outputFile
+            << storedUsername << ":"
+            << storedSalt << ":"
+            << storedHash << '\n';
+    }
+
+    inputFile.close();
+    outputFile.close();
+
+    if (!accountDeleted) {
+        remove(temporaryFilePath.c_str());
+        return false;
+    }
+
+    if (remove(userFilePath.c_str()) != 0) {
+        remove(temporaryFilePath.c_str());
+        return false;
+    }
+
+    if (rename(
+        temporaryFilePath.c_str(),
+        userFilePath.c_str()
+    ) != 0) {
+        return false;
+    }
+
+    accountCache.erase(cleanUsername);
+
+    if (!updateFileHash(
+        userFilePath,
+        integrityFilePath
+    )) {
+        return false;
+    }
+
+    return true;
+}
+
 void PasswordManager::displayCacheStats() const {
     cout << "\nCache Statistics\n";
     cout << "----------------\n";

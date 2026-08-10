@@ -28,6 +28,11 @@ public:
     const std::string& newPassword
     );
 
+    bool deleteAccount(
+    const std::string& username,
+    const std::string& password
+    );
+
     void displayCacheStats() const;
 
     void clearCache();
