@@ -186,6 +186,10 @@ bool PasswordManager::verifyLogin(
 ) const {
     const string cleanUsername = trim(username);
 
+    if (isAccountLocked(cleanUsername)) {
+    return false;
+    }
+
     CachedAccount account;
 
     const auto cachedAccount =
@@ -208,7 +212,18 @@ bool PasswordManager::verifyLogin(
     const string attemptedHash =
         hashPassword(password, account.salt);
 
-    return attemptedHash == account.passwordHash;
+    if (attemptedHash == account.passwordHash) {
+        failedAttempts[cleanUsername] = 0;
+        return true;
+    }
+
+    ++failedAttempts[cleanUsername];
+
+    if (failedAttempts[cleanUsername] >= 3) {
+        lockedAccounts[cleanUsername] = true;
+    }
+
+    return false;
 }
 
 bool PasswordManager::changePassword(
@@ -382,6 +397,16 @@ bool PasswordManager::deleteAccount(
     }
 
     return true;
+}
+
+bool PasswordManager::isAccountLocked(
+    const string& username
+) const {
+    const string cleanUsername = trim(username);
+
+    const auto locked = lockedAccounts.find(cleanUsername);
+
+    return locked != lockedAccounts.end() && locked->second;
 }
 
 void PasswordManager::displayCacheStats() const {

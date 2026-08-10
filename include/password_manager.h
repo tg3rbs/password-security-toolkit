@@ -33,6 +33,10 @@ public:
     const std::string& password
     );
 
+    bool isAccountLocked(
+    const std::string& username
+    ) const;
+
     void displayCacheStats() const;
 
     void clearCache();
@@ -47,6 +51,8 @@ private:
     std::string integrityFilePath;
 
     mutable std::unordered_map<std::string, CachedAccount> accountCache;
+    mutable std::unordered_map<std::string, int> failedAttempts;
+    mutable std::unordered_map<std::string, bool> lockedAccounts;
 
     mutable std::size_t cacheHits;
     mutable std::size_t cacheMisses;

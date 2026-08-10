@@ -56,6 +56,11 @@ void loginMenu(const PasswordManager& passwordManager) {
     cout << "Password: ";
     getline(cin, password);
 
+    if (passwordManager.isAccountLocked(username)) {
+    cout << "Account is locked due to too many failed login attempts.\n";
+    return;
+    }
+
     const bool loginSuccessful =
         passwordManager.verifyLogin(username, password);
 
