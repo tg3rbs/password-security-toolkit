@@ -7,6 +7,39 @@
 
 using namespace std;
 
+string bytesToHex(
+    const vector<unsigned char>& bytes
+) {
+    const char hexCharacters[] = "0123456789abcdef";
+
+    string result;
+    result.reserve(bytes.size() * 2);
+
+    for (unsigned char byte : bytes) {
+        result += hexCharacters[(byte >> 4) & 0x0F];
+        result += hexCharacters[byte & 0x0F];
+    }
+
+    return result;
+}
+
+vector<unsigned char> hexToBytes(const string& hex) {
+    vector<unsigned char> bytes;
+
+    for (size_t i = 0; i < hex.length(); i += 2) {
+        string byteString = hex.substr(i, 2);
+
+        unsigned char byte =
+            static_cast<unsigned char>(
+                stoi(byteString, nullptr, 16)
+            );
+
+        bytes.push_back(byte);
+    }
+
+    return bytes;
+}
+
 CredentialVault::CredentialVault(
     const string& vaultFilePath,
     const vector<unsigned char>& encryptionKey
@@ -29,9 +62,18 @@ bool CredentialVault::saveVault() const {
     }
 
     for (const Credential& credential : credentials) {
+        EncryptedData encryptedPassword =
+            encryptPassword(
+                credential.password,
+                encryptionKey
+            );
+
         outputFile
             << credential.service << ":"
-            << credential.username << '\n';
+            << credential.username << ":"
+            << bytesToHex(encryptedPassword.nonce) << ":"
+            << bytesToHex(encryptedPassword.ciphertext) << ":"
+            << bytesToHex(encryptedPassword.tag) << '\n';
     }
 
     return true;
@@ -48,16 +90,43 @@ bool CredentialVault::loadVault() {
 
     string service;
     string username;
+    string nonceHex;
+    string ciphertextHex;
+    string tagHex;
 
     while (
         getline(inputFile, service, ':') &&
-        getline(inputFile, username)
+        getline(inputFile, username, ':') &&
+        getline(inputFile, nonceHex, ':') &&
+        getline(inputFile, ciphertextHex, ':') &&
+        getline(inputFile, tagHex)
     ) {
+        EncryptedData encryptedPassword;
+
+        encryptedPassword.nonce =
+            hexToBytes(nonceHex);
+
+        encryptedPassword.ciphertext =
+            hexToBytes(ciphertextHex);
+
+        encryptedPassword.tag =
+            hexToBytes(tagHex);
+
         Credential credential;
 
         credential.service = service;
         credential.username = username;
-        credential.password = "";
+
+        try {
+            credential.password =
+                decryptPassword(
+                    encryptedPassword,
+                    encryptionKey
+                );
+        }
+        catch (const exception&) {
+            return false;
+        }
 
         credentials.push_back(credential);
     }
