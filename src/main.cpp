@@ -2,11 +2,13 @@
 #include "file_integrity.h"
 #include "credential.h"
 #include "credential_vault.h"
+#include "vault_crypto.h"
 
 #include <filesystem>
 #include <iostream>
 #include <limits>
 #include <string>
+#include <vector>
 
 using namespace std;
 
