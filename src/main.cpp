@@ -38,16 +38,37 @@ void createAccountMenu(PasswordManager& passwordManager) {
     cout << "Password: ";
     getline(cin, password);
 
-    const bool accountCreated =
+    const AccountCreationResult result =
         passwordManager.createAccount(username, password);
 
-    if (accountCreated) {
-        cout << "Account created successfully.\n";
-    }
-    else {
-        cout << "Account could not be created.\n";
-        cout << "The username may already exist, "
-             << "or the input may be invalid.\n";
+    switch (result) {
+        case AccountCreationResult::Success:
+            cout << "Account created successfully.\n";
+            break;
+
+        case AccountCreationResult::EmptyUsername:
+            cout << "Username cannot be empty.\n";
+            break;
+
+        case AccountCreationResult::EmptyPassword:
+            cout << "Password cannot be empty.\n";
+            break;
+
+        case AccountCreationResult::WeakPassword:
+            cout << "Password must contain at least:\n";
+            cout << "- 8 characters\n";
+            cout << "- 1 uppercase letter\n";
+            cout << "- 1 lowercase letter\n";
+            cout << "- 1 number\n";
+            break;
+
+        case AccountCreationResult::UsernameExists:
+            cout << "That username already exists.\n";
+            break;
+
+        case AccountCreationResult::FileError:
+            cout << "Account could not be saved.\n";
+            break;
     }
 }
 

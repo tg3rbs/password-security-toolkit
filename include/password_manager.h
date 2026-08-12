@@ -5,6 +5,15 @@
 #include <string>
 #include <unordered_map>
 
+enum class AccountCreationResult {
+    Success,
+    EmptyUsername,
+    EmptyPassword,
+    WeakPassword,
+    UsernameExists,
+    FileError
+};
+
 class PasswordManager {
 public:
     PasswordManager(
@@ -12,7 +21,7 @@ public:
     const std::string& integrityFilePath
     );
 
-    bool createAccount(
+    AccountCreationResult createAccount(
         std::string username,
         const std::string& password
     );

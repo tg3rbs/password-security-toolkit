@@ -131,22 +131,27 @@ bool PasswordManager::isStrongPassword(
 
     return hasUpper && hasLower && hasDigit;
 }
-bool PasswordManager::createAccount(
-    std::string username,
+AccountCreationResult PasswordManager::createAccount(
+    string username,
     const string& password
 ) {
 
     username = trim(username);
 
-    if (username.empty() || password.empty()) {
-        return false;
+    if (username.empty()) {
+        return AccountCreationResult::EmptyUsername;
+    }
+
+    if (password.empty()) {
+        return AccountCreationResult::EmptyPassword;
+    }
+
+    if (!isStrongPassword(password)) {
+        return AccountCreationResult::WeakPassword;
     }
 
     if (usernameExists(username)) {
-        return false;
-    }
-    if (!isStrongPassword(password)) {
-        return false;
+        return AccountCreationResult::UsernameExists;
     }
 
     const string salt = generateSalt();
@@ -155,7 +160,7 @@ bool PasswordManager::createAccount(
     ofstream outputFile(userFilePath, ios::app);
 
     if (!outputFile.is_open()) {
-        return false;
+        return AccountCreationResult::FileError;
     }
 
     outputFile
@@ -177,7 +182,7 @@ bool PasswordManager::createAccount(
     integrityFilePath
     );
 
-    return true;
+    return AccountCreationResult::Success;
 }
 
 bool PasswordManager::verifyLogin(
