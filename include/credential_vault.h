@@ -22,6 +22,10 @@ public:
     bool saveVault() const;
     bool loadVault();
 
+    bool deleteCredential(
+    const std::string& service,
+    const std::string& username
+);
 private:
     std::string vaultFilePath;
     

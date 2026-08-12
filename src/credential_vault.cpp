@@ -148,3 +148,24 @@ void CredentialVault::displayCredentials() const {
         cout << '\n';
     }
 }
+
+bool CredentialVault::deleteCredential(
+    const string& service,
+    const string& username
+) {
+    for (auto it = credentials.begin();
+         it != credentials.end();
+         ++it) {
+
+        if (
+            it->service == service &&
+            it->username == username
+        ) {
+            credentials.erase(it);
+
+            return saveVault();
+        }
+    }
+
+    return false;
+}
