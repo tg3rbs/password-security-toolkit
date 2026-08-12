@@ -53,13 +53,14 @@ void createAccountMenu(PasswordManager& passwordManager) {
 void vaultMenu(CredentialVault& vault) {
     int choice = 0;
 
-    while (choice != 4) {
+    while (choice != 5) {
         cout << "\nCredential Vault\n";
         cout << "----------------\n";
         cout << "1. Add credential\n";
         cout << "2. View credentials\n";
         cout << "3. Delete credential\n";
-        cout << "4. Logout\n";
+        cout << "4. Edit credential\n";
+        cout << "5. Logout\n";
         cout << "Enter your choice: ";
 
         if (!(cin >> choice)) {
@@ -128,12 +129,49 @@ void vaultMenu(CredentialVault& vault) {
                 break;
             }
 
-            case 4:
+            case 4: {
+                string service;
+                string username;
+
+                cout << "Current service: ";
+                getline(cin, service);
+
+                cout << "Current username/email: ";
+                getline(cin, username);
+
+                Credential updatedCredential;
+
+                cout << "New service: ";
+                getline(cin, updatedCredential.service);
+
+                cout << "New username/email: ";
+                getline(cin, updatedCredential.username);
+
+                cout << "New password: ";
+                getline(cin, updatedCredential.password);
+
+                if (
+                    vault.editCredential(
+                        service,
+                        username,
+                        updatedCredential
+                    )
+                ) {
+                    cout << "Credential updated successfully.\n";
+                }
+                else {
+                    cout << "Credential not found.\n";
+                }
+
+                break;
+            }
+
+            case 5:
                 cout << "Logged out.\n";
                 break;
 
             default:
-                cout << "Enter a number from 1 to 4.\n";
+                cout << "Enter a number from 1 to 5.\n";
         }
     }
 }

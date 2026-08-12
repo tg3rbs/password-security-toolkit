@@ -169,3 +169,22 @@ bool CredentialVault::deleteCredential(
 
     return false;
 }
+
+bool CredentialVault::editCredential(
+    const string& service,
+    const string& username,
+    const Credential& updatedCredential
+) {
+    for (Credential& credential : credentials) {
+        if (
+            credential.service == service &&
+            credential.username == username
+        ) {
+            credential = updatedCredential;
+
+            return saveVault();
+        }
+    }
+
+    return false;
+}

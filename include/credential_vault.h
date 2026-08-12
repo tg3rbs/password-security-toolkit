@@ -25,7 +25,12 @@ public:
     bool deleteCredential(
     const std::string& service,
     const std::string& username
-);
+    );
+    bool editCredential(
+    const std::string& service,
+    const std::string& username,
+    const Credential& updatedCredential
+    );
 private:
     std::string vaultFilePath;
     
