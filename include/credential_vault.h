@@ -35,6 +35,9 @@ public:
     const std::string& service,
     const std::string& username
     ) const;
+    bool changeEncryptionKey(
+    const std::vector<unsigned char>& newKey
+    );
 private:
     std::string vaultFilePath;
     

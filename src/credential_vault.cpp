@@ -215,3 +215,15 @@ bool CredentialVault::credentialExists(
 
     return false;
 }
+
+bool CredentialVault::changeEncryptionKey(
+    const vector<unsigned char>& newKey
+) {
+    if (newKey.size() != 32) {
+        return false;
+    }
+
+    encryptionKey = newKey;
+
+    return saveVault();
+}

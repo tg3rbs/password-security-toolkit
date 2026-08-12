@@ -298,12 +298,65 @@ void changePasswordMenu(PasswordManager& passwordManager) {
     cout << "New password: ";
     getline(cin, newPassword);
 
+    const string userIdentifier =
+    sha256(username).substr(0, 16);
+
+    const string vaultFilePath =
+        "data/vault_" + userIdentifier + ".txt";
+
+    const string vaultSaltPath =
+        "data/vault_" + userIdentifier + ".salt";
+
+    vector<unsigned char> vaultSalt;
+    vector<unsigned char> oldVaultKey;
+    vector<unsigned char> newVaultKey;
+
+    bool hasVault =
+        filesystem::exists(vaultFilePath) &&
+        filesystem::exists(vaultSaltPath);
+
+    CredentialVault* vault = nullptr;
+
+    if (hasVault) {
+        if (!loadKeySalt(vaultSaltPath, vaultSalt)) {
+            cout << "Could not load vault salt.\n";
+            return;
+        }
+
+        oldVaultKey =
+            deriveKey(currentPassword, vaultSalt);
+
+        newVaultKey =
+            deriveKey(newPassword, vaultSalt);
+
+        vault = new CredentialVault(
+            vaultFilePath,
+            oldVaultKey
+        );
+
+        if (!vault->loadVault()) {
+            cout << "Could not decrypt vault.\n";
+            delete vault;
+            return;
+        }
+    }
+
     const bool passwordChanged =
         passwordManager.changePassword(
             username,
             currentPassword,
             newPassword
         );
+
+    if (passwordChanged && hasVault) {
+        if (!vault->changeEncryptionKey(newVaultKey)) {
+            cout << "Password changed, but vault re-encryption failed.\n";
+            delete vault;
+            return;
+        }
+    }
+
+    delete vault;
 
     if (passwordChanged) {
         cout << "Password changed successfully.\n";
