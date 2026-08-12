@@ -13,7 +13,7 @@ public:
     const std::vector<unsigned char>& encryptionKey
     );
 
-    void addCredential(
+    bool addCredential(
         const Credential& credential
     );
 
@@ -31,6 +31,10 @@ public:
     const std::string& username,
     const Credential& updatedCredential
     );
+    bool credentialExists(
+    const std::string& service,
+    const std::string& username
+    ) const;
 private:
     std::string vaultFilePath;
     

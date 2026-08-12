@@ -134,10 +134,21 @@ bool CredentialVault::loadVault() {
     return true;
 }
 
-void CredentialVault::addCredential(
+bool CredentialVault::addCredential(
     const Credential& credential
 ) {
+    if (
+        credentialExists(
+            credential.service,
+            credential.username
+        )
+    ) {
+        return false;
+    }
+
     credentials.push_back(credential);
+
+    return saveVault();
 }
 
 void CredentialVault::displayCredentials() const {
@@ -183,6 +194,22 @@ bool CredentialVault::editCredential(
             credential = updatedCredential;
 
             return saveVault();
+        }
+    }
+
+    return false;
+}
+
+bool CredentialVault::credentialExists(
+    const string& service,
+    const string& username
+) const {
+    for (const Credential& credential : credentials) {
+        if (
+            credential.service == service &&
+            credential.username == username
+        ) {
+            return true;
         }
     }
 

@@ -112,13 +112,12 @@ void vaultMenu(CredentialVault& vault) {
                     getline(cin, credential.password);
                 }
 
-                vault.addCredential(credential);
-
-                if (vault.saveVault()) {
+               if (vault.addCredential(credential)) {
                     cout << "Credential saved.\n";
                 }
                 else {
                     cout << "Credential could not be saved.\n";
+                    cout << "A credential with that service and username may already exist.\n";
                 }
 
                 break;
