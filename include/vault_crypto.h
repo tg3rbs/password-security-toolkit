@@ -27,4 +27,14 @@ std::vector<unsigned char> deriveKey(
     const std::vector<unsigned char>& salt
 );
 
+bool saveKeySalt(
+    const std::string& filePath,
+    const std::vector<unsigned char>& salt
+);
+
+bool loadKeySalt(
+    const std::string& filePath,
+    std::vector<unsigned char>& salt
+);
+
 #endif

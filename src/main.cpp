@@ -3,6 +3,7 @@
 #include "credential.h"
 #include "credential_vault.h"
 #include "vault_crypto.h"
+#include "sha256.h"
 
 #include <filesystem>
 #include <iostream>
@@ -49,6 +50,73 @@ void createAccountMenu(PasswordManager& passwordManager) {
     }
 }
 
+void vaultMenu(CredentialVault& vault) {
+    int choice = 0;
+
+    while (choice != 3) {
+        cout << "\nCredential Vault\n";
+        cout << "----------------\n";
+        cout << "1. Add credential\n";
+        cout << "2. View credentials\n";
+        cout << "3. Logout\n";
+        cout << "Enter your choice: ";
+
+        if (!(cin >> choice)) {
+            cout << "Invalid input.\n";
+
+            cin.clear();
+            cin.ignore(
+                numeric_limits<streamsize>::max(),
+                '\n'
+            );
+
+            continue;
+        }
+
+        cin.ignore(
+            numeric_limits<streamsize>::max(),
+            '\n'
+        );
+
+        switch (choice) {
+            case 1: {
+                Credential credential;
+
+                cout << "Service: ";
+                getline(cin, credential.service);
+
+                cout << "Username/email: ";
+                getline(cin, credential.username);
+
+                cout << "Password: ";
+                getline(cin, credential.password);
+
+                vault.addCredential(credential);
+
+                if (vault.saveVault()) {
+                    cout << "Credential saved.\n";
+                }
+                else {
+                    cout << "Credential could not be saved.\n";
+                }
+
+                break;
+            }
+
+            case 2:
+                vault.displayCredentials();
+                break;
+
+            case 3:
+                cout << "Logged out.\n";
+                break;
+
+            default:
+                cout << "Enter a number from 1 to 3.\n";
+        }
+    }
+}
+
 void loginMenu(const PasswordManager& passwordManager) {
     string username;
     string password;
@@ -70,6 +138,49 @@ void loginMenu(const PasswordManager& passwordManager) {
 
     if (loginSuccessful) {
         cout << "Login successful.\n";
+
+        const string userIdentifier =
+            sha256(username).substr(0, 16);
+
+        const string vaultFilePath =
+            "data/vault_" + userIdentifier + ".txt";
+
+        const string vaultSaltPath =
+            "data/vault_" + userIdentifier + ".salt";
+
+        vector<unsigned char> vaultSalt;
+
+        if (filesystem::exists(vaultSaltPath)) {
+            if (!loadKeySalt(vaultSaltPath, vaultSalt)) {
+                cout << "Could not load vault salt.\n";
+                return;
+            }
+        }
+        else {
+            vaultSalt = generateKeySalt();
+
+            if (!saveKeySalt(vaultSaltPath, vaultSalt)) {
+                cout << "Could not save vault salt.\n";
+                return;
+            }
+        }
+
+        vector<unsigned char> vaultKey =
+            deriveKey(password, vaultSalt);
+
+        CredentialVault vault(
+            vaultFilePath,
+            vaultKey
+        );
+
+        if (filesystem::exists(vaultFilePath)) {
+            if (!vault.loadVault()) {
+                cout << "Could not decrypt or load vault.\n";
+                return;
+            }
+        }
+
+        vaultMenu(vault);
     }
     else {
         cout << "Invalid username or password.\n";

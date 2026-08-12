@@ -5,6 +5,7 @@
 #include <openssl/sha.h>
 
 #include <stdexcept>
+#include <fstream>
 
 using namespace std;
 
@@ -53,6 +54,45 @@ vector<unsigned char> deriveKey(
     }
 
     return key;
+}
+
+bool saveKeySalt(
+    const string& filePath,
+    const vector<unsigned char>& salt
+) {
+    ofstream outputFile(filePath, ios::binary);
+
+    if (!outputFile.is_open()) {
+        return false;
+    }
+
+    outputFile.write(
+        reinterpret_cast<const char*>(salt.data()),
+        static_cast<streamsize>(salt.size())
+    );
+
+    return outputFile.good();
+}
+
+bool loadKeySalt(
+    const string& filePath,
+    vector<unsigned char>& salt
+) {
+    ifstream inputFile(filePath, ios::binary);
+
+    if (!inputFile.is_open()) {
+        return false;
+    }
+
+    salt.resize(16);
+
+    inputFile.read(
+        reinterpret_cast<char*>(salt.data()),
+        static_cast<streamsize>(salt.size())
+    );
+
+    return inputFile.gcount() ==
+        static_cast<streamsize>(salt.size());
 }
 
 EncryptedData encryptPassword(
