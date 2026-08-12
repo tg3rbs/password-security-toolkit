@@ -4,6 +4,7 @@
 #include "credential_vault.h"
 #include "vault_crypto.h"
 #include "sha256.h"
+#include "password_generator.h"
 
 #include <filesystem>
 #include <iostream>
@@ -90,8 +91,26 @@ void vaultMenu(CredentialVault& vault) {
                 cout << "Username/email: ";
                 getline(cin, credential.username);
 
-                cout << "Password: ";
-                getline(cin, credential.password);
+                string generateChoice;
+
+                cout << "Generate secure password? (y/n): ";
+                getline(cin, generateChoice);
+
+                if (
+                    generateChoice == "y" ||
+                    generateChoice == "Y"
+                ) {
+                    credential.password =
+                        generatePassword(20);
+
+                    cout << "Generated password: "
+                        << credential.password
+                        << '\n';
+                }
+                else {
+                    cout << "Password: ";
+                    getline(cin, credential.password);
+                }
 
                 vault.addCredential(credential);
 
@@ -147,8 +166,26 @@ void vaultMenu(CredentialVault& vault) {
                 cout << "New username/email: ";
                 getline(cin, updatedCredential.username);
 
-                cout << "New password: ";
-                getline(cin, updatedCredential.password);
+                string generateChoice;
+
+                cout << "Generate secure password? (y/n): ";
+                getline(cin, generateChoice);
+
+                if (
+                    generateChoice == "y" ||
+                    generateChoice == "Y"
+                ) {
+                    updatedCredential.password =
+                        generatePassword(20);
+
+                    cout << "Generated password: "
+                        << updatedCredential.password
+                        << '\n';
+                }
+                else {
+                    cout << "New password: ";
+                    getline(cin, updatedCredential.password);
+                }
 
                 if (
                     vault.editCredential(
