@@ -58,6 +58,7 @@ private:
 
     std::string userFilePath;
     std::string integrityFilePath;
+    std::string lockoutFilePath;
 
     mutable std::unordered_map<std::string, CachedAccount> accountCache;
     mutable std::unordered_map<std::string, int> failedAttempts;
@@ -83,6 +84,9 @@ private:
     bool isStrongPassword(
     const std::string& password
     ) const;
+
+    void loadLockoutState();
+    void saveLockoutState() const;
 };
 
 #endif

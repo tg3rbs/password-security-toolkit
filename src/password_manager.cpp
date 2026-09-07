@@ -28,8 +28,11 @@ PasswordManager::PasswordManager(
 )
     : userFilePath(userFilePath),
       integrityFilePath(integrityFilePath),
+      lockoutFilePath("data/lockouts.txt"),
       cacheHits(0),
       cacheMisses(0) {
+
+    loadLockoutState();
 }
 
 string PasswordManager::generateSalt() const {
@@ -219,6 +222,10 @@ bool PasswordManager::verifyLogin(
 
     if (attemptedHash == account.passwordHash) {
         failedAttempts[cleanUsername] = 0;
+        lockedAccounts[cleanUsername] = false;
+
+        saveLockoutState();
+
         return true;
     }
 
@@ -227,6 +234,8 @@ bool PasswordManager::verifyLogin(
     if (failedAttempts[cleanUsername] >= 3) {
         lockedAccounts[cleanUsername] = true;
     }
+
+    saveLockoutState();
 
     return false;
 }
@@ -412,6 +421,48 @@ bool PasswordManager::isAccountLocked(
     const auto locked = lockedAccounts.find(cleanUsername);
 
     return locked != lockedAccounts.end() && locked->second;
+}
+
+void PasswordManager::loadLockoutState() {
+    ifstream inputFile(lockoutFilePath);
+
+    if (!inputFile.is_open()) {
+        return;
+    }
+
+    string username;
+    int attempts;
+    bool locked;
+
+    while (inputFile >> username >> attempts >> locked) {
+        failedAttempts[username] = attempts;
+        lockedAccounts[username] = locked;
+    }
+}
+
+void PasswordManager::saveLockoutState() const {
+    ofstream outputFile(lockoutFilePath);
+
+    if (!outputFile.is_open()) {
+        return;
+    }
+
+    for (const auto& entry : failedAttempts) {
+        const string& username = entry.first;
+        const int attempts = entry.second;
+
+        bool locked = false;
+
+        const auto lockedEntry = lockedAccounts.find(username);
+
+        if (lockedEntry != lockedAccounts.end()) {
+            locked = lockedEntry->second;
+        }
+
+        outputFile << username << ' '
+                   << attempts << ' '
+                   << locked << '\n';
+    }
 }
 
 void PasswordManager::displayCacheStats() const {
