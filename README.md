@@ -189,7 +189,7 @@ Vault filenames use derived user identifiers rather than plaintext usernames.
 
 ## Testing
 
-The application has been manually tested for account creation, authentication failures, lockout behavior, password validation, credential CRUD operations, password generation, persistence across restarts, encrypted storage, vault tamper detection, master-password changes, vault re-encryption, account deletion, and account-file integrity verification.
+The application has been manually tested for account creation, authentication failures, lockout behavior, password validation, credential CRUD operations, password generation, persistence across restarts, encrypted storage, vault tamper detection, master-password changes, vault re-encryption, account deletion, and account-file integrity verification. Account lockout persistence was tested adversarially by triggering the failed-login threshold, restarting the application, and attempting to authenticate again. Testing identified that lockout state was originally stored only in memory, allowing an application restart to bypass the lockout. The issue was corrected by persisting failed-attempt counts and lockout status to disk and restoring that state when the application starts.
 
 The project compiles without warnings using:
 
