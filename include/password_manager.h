@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <string>
 #include <unordered_map>
+#include <ctime>
 
 enum class AccountCreationResult {
     Success,
@@ -63,6 +64,7 @@ private:
     mutable std::unordered_map<std::string, CachedAccount> accountCache;
     mutable std::unordered_map<std::string, int> failedAttempts;
     mutable std::unordered_map<std::string, bool> lockedAccounts;
+    mutable std::unordered_map<std::string, std::time_t> lockoutTimes;
 
     mutable std::size_t cacheHits;
     mutable std::size_t cacheMisses;

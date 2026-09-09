@@ -9,6 +9,7 @@
 #include <cctype>
 #include <algorithm>
 #include <cstdio>
+#include <ctime>
 
 using namespace std;
 
@@ -233,6 +234,7 @@ bool PasswordManager::verifyLogin(
 
     if (failedAttempts[cleanUsername] >= 3) {
         lockedAccounts[cleanUsername] = true;
+	lockoutTimes[cleanUsername] = std::time(nullptr);
     }
 
     saveLockoutState();
@@ -416,11 +418,33 @@ bool PasswordManager::deleteAccount(
 bool PasswordManager::isAccountLocked(
     const string& username
 ) const {
+
     const string cleanUsername = trim(username);
 
     const auto locked = lockedAccounts.find(cleanUsername);
 
-    return locked != lockedAccounts.end() && locked->second;
+    if (locked == lockedAccounts.end() || !locked->second) {
+        return false;
+    }
+
+    const auto lockTime = lockoutTimes.find(cleanUsername);
+
+    if (lockTime == lockoutTimes.end()) {
+        return true;
+    }
+
+    const std::time_t currentTime = std::time(nullptr);
+
+    if (currentTime - lockTime->second >= 60) {
+        lockedAccounts[cleanUsername] = false;
+        failedAttempts[cleanUsername] = 0;
+        lockoutTimes.erase(cleanUsername);
+        saveLockoutState();
+
+        return false;
+    }
+
+    return true;
 }
 
 void PasswordManager::loadLockoutState() {
@@ -433,10 +457,14 @@ void PasswordManager::loadLockoutState() {
     string username;
     int attempts;
     bool locked;
+    std::time_t lockTime;
 
-    while (inputFile >> username >> attempts >> locked) {
+    while (inputFile >> username >> attempts >> locked >> lockTime) {
         failedAttempts[username] = attempts;
         lockedAccounts[username] = locked;
+	    if (locked) {
+	        lockoutTimes[username] = lockTime;
+	    }
     }
 }
 
@@ -459,9 +487,18 @@ void PasswordManager::saveLockoutState() const {
             locked = lockedEntry->second;
         }
 
+	std::time_t lockTime = 0;
+
+	const auto lockTimeEntry = lockoutTimes.find(username);
+
+	if (lockTimeEntry != lockoutTimes.end()) {
+	    lockTime = lockTimeEntry->second;
+	}
+
         outputFile << username << ' '
                    << attempts << ' '
-                   << locked << '\n';
+                   << locked << ' ' 
+		   << lockTime <<  '\n';
     }
 }
 
